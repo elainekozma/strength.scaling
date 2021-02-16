@@ -1,30 +1,42 @@
 ---
 title: "Analyses"
-author: "E.Kozma"
-date: "16/02/2021"
-output: html_document
+author: "E. Kozma"
+date: 'Last modified: `r Sys.Date()`'
+output: html_document 
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set()
 ```
 
-## R Markdown
+```{r data, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(knitr)
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+strength <- read_csv("strength.csv")
 ```
 
-## Including Plots
+## Summary
+The strength data set was compiled from the [KNHANES](https://knhanes.cdc.go.kr/knhanes/main.do) and the [NHANES](https://wwwn.cdc.gov/nchs/nhanes/) surveys
 
-You can also embed plots, for example:
+```{r strength summary, message=FALSE, echo=FALSE}
+summary=strength %>%
+  group_by(sex, survey) %>%
+  summarize(
+    mean_grip_strength= mean(gs.max),
+    SD_grip_strength= sd(gs.max)
+  )
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+kable(summary, col.names=c("Sex", "Survey Population", "Mean max. strength", "SD max. strength"), caption = "Table 1. Strength as function of sex and survey population", align="llcc")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## PLOTS
+```{r first plot, echo=FALSE, out.width='50%', fig.align='center', fig.cap="Fig. 1: Maximum grip strenght as a function on body mass in men and women"}
+
+ggplot(strength, aes(wt, gs.max, col=sex, shape=survey))+
+  geom_point()+
+  xlab("Body Mass (kg)")+
+  ylab("Grip Strength (kg)")
+```
