@@ -2,11 +2,14 @@
 title: "Analyses"
 author: "E. Kozma"
 date: 'Last modified: `r Sys.Date()`'
-output: html_document 
+output: 
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set()
+knitr::opts_chunk$set(fig.align='center')
 ```
 
 ```{r data, include=FALSE}
@@ -32,11 +35,46 @@ summary=strength %>%
 kable(summary, col.names=c("Sex", "Survey Population", "Mean max. strength", "SD max. strength"), caption = "Table 1. Strength as function of sex and survey population", align="llcc")
 ```
 
-## PLOTS
-```{r first plot, echo=FALSE, out.width='50%', fig.align='center', fig.cap="Fig. 1: Maximum grip strenght as a function on body mass in men and women"}
+## Plots
+```{r first plot, echo=FALSE, out.width='80%', fig.cap="Fig. 1: Maximum grip strenght as a function on body mass in men and women"}
 
 ggplot(strength, aes(wt, gs.max, col=sex, shape=survey))+
   geom_point()+
+  scale_shape_manual(values=c(16,1))+
   xlab("Body Mass (kg)")+
   ylab("Grip Strength (kg)")
 ```
+
+
+
+
+```{r second plot logs, message=FALSE, echo=FALSE}
+ggplot(strength,(aes(log(wt), log(9.81*gs.max), color=sex, linetype=sex)))+
+  geom_point()+
+  geom_smooth(method="lm")+
+  scale_shape_manual(values=c(16,1))+
+  scale_y_continuous(breaks=c(log(200),log(400), log(600),log(800) ),
+                     labels = c(200, 400, 600, 800))+
+  scale_x_continuous(breaks=c(log(50), log(100),log(150),log(200)),
+                     labels = c(50, 100, 150, 200))+
+  xlab("Body Mass (kg)")+
+  ylab("Grip Strength (N)")
+```
+
+## Models
+
+I model grip strength as a function of mass using logarithmic models for each BMI category.
+
+### Normal BMI scaling
+
+```{r normal bmi}
+mod.1a=lm(log(gs.max)~log(wt), data=strength[strength$bmi>18.5 & strength$bmi<25,])
+summary(mod.1a)
+
+mod.1b=lm(log(gs.max)~log(wt)+sex, data=strength[strength$bmi>18.5 & strength$bmi<25,])
+summary(mod.1b)#this is the best
+
+mod.1c=lm(log(gs.max)~log(wt)+sex+survey, data=strength[strength$bmi>18.5 & strength$bmi<25,])
+summary(mod.1c)
+```
+
